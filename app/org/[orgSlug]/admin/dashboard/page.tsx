@@ -273,6 +273,9 @@ function EleccionCard({
 
 // ── Banner de trial ───────────────────────────────────────────
 function TrialBanner({ org }: { org: Organizacion }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   if (org.plan !== "trial") return null;
 
   const diasRestantes = org.trial_expires_at
@@ -280,37 +283,78 @@ function TrialBanner({ org }: { org: Organizacion }) {
     : 0;
   const expirado = diasRestantes === 0;
 
+  async function handleSuscribirse() {
+    setLoading(true);
+    setError("");
+    try {
+      // Obtener email del admin autenticado
+      const { createClient } = await import("@supabase/supabase-js");
+      const sb = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data: { session } } = await sb.auth.getSession();
+      const adminEmail = session?.user?.email ?? "";
+
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planSlug:   "starter",
+          orgId:      org.id,
+          orgNombre:  org.nombre,
+          adminEmail,
+        }),
+      });
+
+      if (!res.ok) throw new Error("No se pudo generar el link de pago");
+      const { checkoutUrl } = await res.json();
+      window.location.href = checkoutUrl;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al conectar con el servicio de pago");
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className={`mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border text-sm ${
+    <div className={`mb-6 rounded-xl border text-sm overflow-hidden ${
       expirado
         ? "bg-red-50 border-red-200 text-red-800"
         : diasRestantes <= 3
           ? "bg-amber-50 border-amber-200 text-amber-800"
           : "bg-blue-50 border-blue-200 text-blue-800"
     }`}>
-      <span className="text-xl flex-shrink-0">{expirado ? "🔒" : "⏳"}</span>
-      <div className="flex-1 min-w-0">
-        {expirado ? (
-          <p className="font-semibold">Tu período de prueba expiró</p>
-        ) : (
-          <p>
-            <span className="font-semibold">Período de prueba</span>
-            {" — "}
-            {diasRestantes === 1 ? "queda 1 día" : `quedan ${diasRestantes} días`}.
-            {" "}Límite: {org.limite_elecciones} elección{org.limite_elecciones !== 1 ? "es" : ""} · {org.limite_votantes.toLocaleString()} votantes.
-          </p>
-        )}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <span className="text-xl flex-shrink-0">{expirado ? "🔒" : "⏳"}</span>
+        <div className="flex-1 min-w-0">
+          {expirado ? (
+            <p className="font-semibold">Tu período de prueba expiró</p>
+          ) : (
+            <p>
+              <span className="font-semibold">Período de prueba</span>
+              {" — "}
+              {diasRestantes === 1 ? "queda 1 día" : `quedan ${diasRestantes} días`}.
+              {" "}Límite: {org.limite_elecciones} elección{org.limite_elecciones !== 1 ? "es" : ""} · {org.limite_votantes.toLocaleString()} votantes.
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleSuscribirse}
+          disabled={loading}
+          className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-60 ${
+            expirado
+              ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+              : "bg-white hover:bg-blue-50 border-current"
+          }`}
+        >
+          {loading ? "Cargando..." : "Suscribirse →"}
+        </button>
       </div>
-      <a
-        href="mailto:hola@bytecraft.com.ar?subject=Suscripción VotaYa"
-        className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
-          expirado
-            ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
-            : "bg-white hover:bg-blue-50 border-current"
-        }`}
-      >
-        Suscribirse →
-      </a>
+      {error && (
+        <div className="px-4 py-2 bg-red-100 border-t border-red-200 text-red-700 text-xs">
+          {error}
+        </div>
+      )}
     </div>
   );
 }
