@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
-import { getEleccionById, getListasAdmin, getEstructuraElectoral } from "@/lib/supabase/admin-queries";
+import { getEleccionById, getListasAdmin, getEstructuraElectoral, getOrgBySlug } from "@/lib/supabase/admin-queries";
 import OrgEleccionAdminClient from "./OrgEleccionAdminClient";
-import type { Eleccion, Lista, EstructuraNode } from "@/types/voting";
+import type { Eleccion, Lista, EstructuraNode, Organizacion } from "@/types/voting";
 
 export default function OrgEleccionAdminPage() {
   const params = useParams<{ orgSlug: string; id: string }>();
@@ -12,6 +12,7 @@ export default function OrgEleccionAdminPage() {
   const [eleccion,    setEleccion]    = useState<Eleccion | null>(null);
   const [listas,      setListas]      = useState<Lista[]>([]);
   const [estructura,  setEstructura]  = useState<EstructuraNode[]>([]);
+  const [org,         setOrg]         = useState<Organizacion | null>(null);
   const [loading,     setLoading]     = useState(true);
   const [notFound404, setNotFound404] = useState(false);
 
@@ -23,14 +24,16 @@ export default function OrgEleccionAdminPage() {
       getEleccionById(eleccionId),
       getListasAdmin(eleccionId),
       getEstructuraElectoral(eleccionId),
-    ]).then(([e, l, est]) => {
+      getOrgBySlug(params.orgSlug),
+    ]).then(([e, l, est, o]) => {
       if (!e) { setNotFound404(true); return; }
       setEleccion(e);
       setListas(l);
       setEstructura(est);
+      setOrg(o);
       setLoading(false);
     });
-  }, [params.id]);
+  }, [params.id, params.orgSlug]);
 
   if (notFound404) notFound();
 
@@ -48,6 +51,7 @@ export default function OrgEleccionAdminPage() {
       listasIniciales={listas}
       estructuraInicial={estructura}
       orgSlug={params.orgSlug}
+      limiteVotantes={org?.limite_votantes ?? null}
     />
   );
 }

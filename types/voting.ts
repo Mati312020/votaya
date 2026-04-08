@@ -9,6 +9,11 @@ export interface Organizacion {
   color_primario: string;
   website: string | null;
   created_at: string;
+  // Plan & trial
+  plan: string;
+  trial_expires_at: string | null;
+  limite_votantes: number;
+  limite_elecciones: number;
 }
 
 export interface OrgStats {

@@ -112,7 +112,6 @@ export default function VerificarRenaper({ verificacionToken, onSuccess }: Props
           ref={frenteInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={handleFrenteDni}
           className="hidden"
         />
@@ -122,7 +121,8 @@ export default function VerificarRenaper({ verificacionToken, onSuccess }: Props
           className="w-full py-6 border-2 border-dashed border-blue-300 hover:border-blue-500 rounded-xl text-blue-600 font-semibold transition-colors flex flex-col items-center gap-2"
         >
           <span className="text-3xl">🪪</span>
-          <span>Tomar foto del DNI</span>
+          <span>Foto del DNI</span>
+          <span className="text-xs font-normal text-blue-400">cámara o archivo</span>
         </button>
       </div>
     );
@@ -148,7 +148,6 @@ export default function VerificarRenaper({ verificacionToken, onSuccess }: Props
           ref={selfieInputRef}
           type="file"
           accept="image/*"
-          capture="user"
           onChange={handleSelfie}
           className="hidden"
         />
@@ -162,7 +161,8 @@ export default function VerificarRenaper({ verificacionToken, onSuccess }: Props
           }`}
         >
           <span className="text-3xl">{selfie ? "✅" : "🤳"}</span>
-          <span>{selfie ? "Selfie capturada — tomar otra" : "Tomar selfie"}</span>
+          <span>{selfie ? "Foto capturada — cambiar" : "Foto de tu cara"}</span>
+          {!selfie && <span className="text-xs font-normal text-blue-400">cámara o archivo</span>}
         </button>
 
         {selfie && (

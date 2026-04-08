@@ -33,9 +33,10 @@ interface Props {
   listasIniciales: Lista[];
   estructuraInicial: EstructuraNode[];
   orgSlug: string;
+  limiteVotantes: number | null;
 }
 
-export default function OrgEleccionAdminClient({ eleccion: eleccionInicial, listasIniciales, estructuraInicial, orgSlug }: Props) {
+export default function OrgEleccionAdminClient({ eleccion: eleccionInicial, listasIniciales, estructuraInicial, orgSlug, limiteVotantes }: Props) {
   const base = `/org/${orgSlug}/admin`;
   const [activeTab, setActiveTab] = useState<Tab>("detalles");
   const [listas, setListas] = useState<Lista[]>(listasIniciales);
@@ -166,7 +167,7 @@ export default function OrgEleccionAdminClient({ eleccion: eleccionInicial, list
           </div>
         )}
         {activeTab === "padron" && (
-          <PadronUploader eleccionId={eleccionInicial.id} />
+          <PadronUploader eleccionId={eleccionInicial.id} limiteVotantes={limiteVotantes} />
         )}
         {activeTab === "qr" && (
           <QREleccion slug={eleccionInicial.slug} titulo={eleccionInicial.titulo} />

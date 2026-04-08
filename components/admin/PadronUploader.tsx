@@ -8,6 +8,7 @@ import type { EstructuraNode } from "@/types/voting";
 
 interface Props {
   eleccionId: number;
+  limiteVotantes?: number | null;
 }
 
 interface Stats {
@@ -17,7 +18,7 @@ interface Stats {
 
 type Stage = "idle" | "parsing" | "hashing" | "uploading" | "done" | "error";
 
-export default function PadronUploader({ eleccionId }: Props) {
+export default function PadronUploader({ eleccionId, limiteVotantes }: Props) {
   const [stage,    setStage]    = useState<Stage>("idle");
   const [stats,    setStats]    = useState<Stats | null>(null);
   const [mesas,    setMesas]    = useState<EstructuraNode[]>([]);
@@ -82,6 +83,15 @@ export default function PadronUploader({ eleccionId }: Props) {
       if (parseResult.dnis.length === 0) {
         setStage("error");
         setMessage("El CSV no contiene DNIs válidos.");
+        return;
+      }
+
+      // Verificar límite de votantes del plan
+      if (limiteVotantes != null && parseResult.dnis.length > limiteVotantes) {
+        setStage("error");
+        setMessage(
+          `El CSV tiene ${parseResult.dnis.length.toLocaleString()} DNIs pero el plan actual permite hasta ${limiteVotantes.toLocaleString()} votantes. Reducí el archivo o suscribite para continuar.`
+        );
         return;
       }
 
@@ -156,12 +166,27 @@ export default function PadronUploader({ eleccionId }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-100 rounded-xl p-4 text-center">
             <p className="text-2xl font-bold text-slate-900">{stats.total.toLocaleString()}</p>
-            <p className="text-xs text-slate-500 mt-0.5">Padrón total</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Padrón total
+              {limiteVotantes != null && (
+                <span className={`ml-1 ${stats.total >= limiteVotantes ? "text-red-500 font-semibold" : "text-slate-400"}`}>
+                  / {limiteVotantes.toLocaleString()}
+                </span>
+              )}
+            </p>
           </div>
           <div className="bg-blue-50 rounded-xl p-4 text-center">
             <p className="text-2xl font-bold text-blue-700">{stats.votaron.toLocaleString()}</p>
             <p className="text-xs text-slate-500 mt-0.5">Ya votaron</p>
           </div>
+        </div>
+      )}
+
+      {/* Aviso límite de votantes */}
+      {limiteVotantes != null && stats && stats.total >= limiteVotantes && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+          <span className="font-semibold">Límite de padrón alcanzado.</span>{" "}
+          El plan de prueba permite hasta {limiteVotantes.toLocaleString()} votantes. Suscribite para ampliar el límite.
         </div>
       )}
 

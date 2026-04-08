@@ -41,7 +41,7 @@ export default function OrgAdminNav() {
                 className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
                 style={{ backgroundColor: org?.color_primario ?? "#1e40af" }}
               >
-                {org?.nombre.charAt(0) ?? "O"}
+                {(org?.nombre.charAt(0) ?? "O").toUpperCase()}
               </div>
             )}
             <span className="font-semibold text-slate-900 text-sm hidden sm:block">

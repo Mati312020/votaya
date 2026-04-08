@@ -11,7 +11,7 @@ import {
   actualizarEleccion,
   logAdminEvent,
 } from "@/lib/supabase/admin-queries";
-import type { Eleccion } from "@/types/voting";
+import type { Eleccion, Organizacion } from "@/types/voting";
 
 const ESTADO_BADGE: Record<string, string> = {
   borrador: "bg-slate-100 text-slate-600",
@@ -271,6 +271,50 @@ function EleccionCard({
   );
 }
 
+// ── Banner de trial ───────────────────────────────────────────
+function TrialBanner({ org }: { org: Organizacion }) {
+  if (org.plan !== "trial") return null;
+
+  const diasRestantes = org.trial_expires_at
+    ? Math.max(0, Math.ceil((new Date(org.trial_expires_at).getTime() - Date.now()) / 86_400_000))
+    : 0;
+  const expirado = diasRestantes === 0;
+
+  return (
+    <div className={`mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border text-sm ${
+      expirado
+        ? "bg-red-50 border-red-200 text-red-800"
+        : diasRestantes <= 3
+          ? "bg-amber-50 border-amber-200 text-amber-800"
+          : "bg-blue-50 border-blue-200 text-blue-800"
+    }`}>
+      <span className="text-xl flex-shrink-0">{expirado ? "🔒" : "⏳"}</span>
+      <div className="flex-1 min-w-0">
+        {expirado ? (
+          <p className="font-semibold">Tu período de prueba expiró</p>
+        ) : (
+          <p>
+            <span className="font-semibold">Período de prueba</span>
+            {" — "}
+            {diasRestantes === 1 ? "queda 1 día" : `quedan ${diasRestantes} días`}.
+            {" "}Límite: {org.limite_elecciones} elección{org.limite_elecciones !== 1 ? "es" : ""} · {org.limite_votantes.toLocaleString()} votantes.
+          </p>
+        )}
+      </div>
+      <a
+        href="mailto:hola@bytecraft.com.ar?subject=Suscripción VotaYa"
+        className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+          expirado
+            ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
+            : "bg-white hover:bg-blue-50 border-current"
+        }`}
+      >
+        Suscribirse →
+      </a>
+    </div>
+  );
+}
+
 // ── Modal confirmar cierre (doble confirmación) ───────────────
 function ModalCerrar({
   eleccion,
@@ -340,6 +384,7 @@ export default function OrgDashboardPage() {
   const params = useParams<{ orgSlug: string }>();
   const base = `/org/${params.orgSlug}/admin`;
 
+  const [org, setOrg] = useState<Organizacion | null>(null);
   const [elecciones, setElecciones] = useState<Eleccion[]>([]);
   const [stats, setStats] = useState<Record<number, { total: number; votaron: number }>>({});
   const [loading, setLoading] = useState(true);
@@ -347,8 +392,9 @@ export default function OrgDashboardPage() {
   const [isPendingCierre, startCierreTransition] = useTransition();
 
   async function load() {
-    const org = await getOrgBySlug(params.orgSlug);
-    const data = await getEleccionesAdmin(org?.id);
+    const orgData = await getOrgBySlug(params.orgSlug);
+    setOrg(orgData);
+    const data = await getEleccionesAdmin(orgData?.id);
     setElecciones(data);
     setLoading(false);
     const entries = await Promise.all(
@@ -375,16 +421,34 @@ export default function OrgDashboardPage() {
     });
   }
 
+  const limiteAlcanzado = org !== null && elecciones.length >= org.limite_elecciones;
+
   return (
     <div>
+      {org && <TrialBanner org={org} />}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Elecciones</h1>
-        <Link
-          href={`${base}/elecciones/nueva`}
-          className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-        >
-          + Nueva elección
-        </Link>
+        {limiteAlcanzado ? (
+          <div className="relative group">
+            <button
+              disabled
+              className="bg-slate-200 text-slate-400 text-sm font-semibold px-4 py-2 rounded-xl cursor-not-allowed"
+            >
+              + Nueva elección
+            </button>
+            <div className="absolute right-0 top-full mt-1 w-56 bg-slate-800 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              Límite de {org!.limite_elecciones} elección{org!.limite_elecciones !== 1 ? "es" : ""} alcanzado en el plan de prueba.
+            </div>
+          </div>
+        ) : (
+          <Link
+            href={`${base}/elecciones/nueva`}
+            className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            + Nueva elección
+          </Link>
+        )}
       </div>
 
       {loading ? (

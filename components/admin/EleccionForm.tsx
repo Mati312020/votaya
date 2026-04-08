@@ -205,7 +205,7 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
             { value: "ninguna",   icon: "🔓", label: "Sin verificación",       desc: "Solo se valida que el DNI esté en el padrón" },
             { value: "dni_qr",    icon: "📷", label: "QR del DNI",              desc: "El votante escanea el código de barras trasero de su DNI físico" },
             { value: "otp_email", icon: "✉️", label: "Código por email",        desc: "Se envía un código de 6 dígitos al email registrado en el padrón" },
-            { value: "renaper",   icon: "🪪", label: "RENAPER (biométrico)",    desc: "Foto del DNI + selfie verificadas contra el Registro Nacional" },
+            { value: "renaper",   icon: "🪪", label: "RENAPER (biométrico)",    desc: "Foto del DNI + selfie verificadas contra el Registro Nacional", pendiente: true },
           ] as const).map((opt) => (
             <button
               key={opt.value}
@@ -222,6 +222,11 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
                 <span className={`text-sm font-semibold ${verificacionIdentidad === opt.value ? "text-blue-700" : "text-slate-800"}`}>
                   {opt.label}
                 </span>
+                {"pendiente" in opt && opt.pendiente && (
+                  <span className="ml-auto text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 whitespace-nowrap">
+                    ⏳ En habilitación
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 leading-snug">{opt.desc}</p>
             </button>
@@ -233,9 +238,14 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
           </p>
         )}
         {verificacionIdentidad === "renaper" && (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            Requiere habilitación oficial de RENAPER y <code>RENAPER_API_KEY</code>. En entorno de prueba se usa un mock.
-          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 flex flex-col gap-1">
+            <p className="text-xs font-semibold text-amber-800">⏳ Habilitación en proceso</p>
+            <p className="text-xs text-amber-700">
+              La integración con RENAPER requiere autorización institucional oficial (actualmente en trámite).
+              Hasta entonces el sistema usa un <strong>mock de prueba</strong> que aprueba todas las verificaciones.
+              No usar en elecciones reales hasta obtener la <code>RENAPER_API_KEY</code>.
+            </p>
+          </div>
         )}
       </div>
 
