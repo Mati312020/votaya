@@ -10,9 +10,9 @@ export default async function VerificarPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { m } = await searchParams;
 
-  if (!m || !["dni_qr", "otp_email", "renaper"].includes(m)) {
+  if (!m || !["dni_qr", "otp_email", "renaper", "face_cloud"].includes(m)) {
     notFound();
   }
 
-  return <VerificarClient slug={slug} metodo={m as "dni_qr" | "otp_email" | "renaper"} />;
+  return <VerificarClient slug={slug} metodo={m as "dni_qr" | "otp_email" | "renaper" | "face_cloud"} />;
 }

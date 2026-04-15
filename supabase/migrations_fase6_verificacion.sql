@@ -277,3 +277,11 @@ GRANT EXECUTE ON FUNCTION verificar_otp              TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION get_email_padron           TO anon, authenticated;
 
 NOTIFY pgrst, 'reload schema';
+
+-- ============================================================
+-- Fase 8 — Verificación biométrica con AWS Rekognition
+-- Agrega 'face_cloud' al constraint de verificacion_identidad
+-- ============================================================
+ALTER TABLE elecciones DROP CONSTRAINT IF EXISTS elecciones_verificacion_identidad_check;
+ALTER TABLE elecciones ADD CONSTRAINT elecciones_verificacion_identidad_check
+  CHECK (verificacion_identidad IN ('ninguna','dni_qr','otp_email','renaper','face_cloud'));

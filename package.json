@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.1030.0",
     "@noble/hashes": "^2.0.1",
     "@supabase/supabase-js": "^2.101.1",
     "@tailwindcss/postcss": "^4",

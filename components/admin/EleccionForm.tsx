@@ -202,10 +202,11 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {([
-            { value: "ninguna",   icon: "🔓", label: "Sin verificación",       desc: "Solo se valida que el DNI esté en el padrón" },
-            { value: "dni_qr",    icon: "📷", label: "QR del DNI",              desc: "El votante escanea el código de barras trasero de su DNI físico" },
-            { value: "otp_email", icon: "✉️", label: "Código por email",        desc: "Se envía un código de 6 dígitos al email registrado en el padrón" },
-            { value: "renaper",   icon: "🪪", label: "RENAPER (biométrico)",    desc: "Foto del DNI + selfie verificadas contra el Registro Nacional", pendiente: true },
+            { value: "ninguna",    icon: "🔓", label: "Sin verificación",         desc: "Solo se valida que el DNI esté en el padrón" },
+            { value: "dni_qr",    icon: "📷", label: "QR del DNI",               desc: "El votante escanea el código de barras trasero de su DNI físico" },
+            { value: "otp_email", icon: "✉️", label: "Código por email",         desc: "Se envía un código de 6 dígitos al email registrado en el padrón" },
+            { value: "face_cloud", icon: "🤳", label: "Verificación biométrica", desc: "Foto del DNI + selfie comparadas con IA. Sin trámites gubernamentales." },
+            { value: "renaper",   icon: "🪪", label: "RENAPER (solo mock)",      desc: "Foto del DNI + selfie contra el Registro Nacional. Requiere habilitación oficial.", pendiente: true },
           ] as const).map((opt) => (
             <button
               key={opt.value}
@@ -232,6 +233,12 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
             </button>
           ))}
         </div>
+        {verificacionIdentidad === "face_cloud" && (
+          <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+            Requiere configurar <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code> y <code>AWS_REGION</code> en el servidor.
+            Las imágenes se procesan por AWS Rekognition y no son almacenadas. Costo: ~USD 0.002 por verificación.
+          </p>
+        )}
         {verificacionIdentidad === "otp_email" && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             El padrón debe incluir una columna <code>email</code>. Requiere <code>RESEND_API_KEY</code> en el servidor.
