@@ -6,10 +6,11 @@ import VerificarQR from "./metodos/VerificarQR";
 import VerificarOTP from "./metodos/VerificarOTP";
 import VerificarRenaper from "./metodos/VerificarRenaper";
 import VerificarFaceCloud from "./metodos/VerificarFaceCloud";
+import VerificarFaceClient from "./metodos/VerificarFaceClient";
 
 interface Props {
   slug: string;
-  metodo: "dni_qr" | "otp_email" | "renaper" | "face_cloud";
+  metodo: "dni_qr" | "otp_email" | "renaper" | "face_cloud" | "face_client";
 }
 
 export default function VerificarClient({ slug, metodo }: Props) {
@@ -40,10 +41,11 @@ export default function VerificarClient({ slug, metodo }: Props) {
   }
 
   const metodoLabels = {
-    dni_qr:     { icon: "📷", titulo: "Verificación con DNI" },
-    otp_email:  { icon: "✉️", titulo: "Verificación por email" },
-    renaper:    { icon: "🪪", titulo: "Verificación biométrica" },
-    face_cloud: { icon: "🤳", titulo: "Verificación biométrica" },
+    dni_qr:      { icon: "📷", titulo: "Verificación con DNI" },
+    otp_email:   { icon: "✉️", titulo: "Verificación por email" },
+    renaper:     { icon: "🪪", titulo: "Verificación biométrica" },
+    face_cloud:  { icon: "🤳", titulo: "Verificación biométrica" },
+    face_client: { icon: "🧠", titulo: "Verificación biométrica offline" },
   };
 
   return (
@@ -69,6 +71,9 @@ export default function VerificarClient({ slug, metodo }: Props) {
           )}
           {metodo === "face_cloud" && (
             <VerificarFaceCloud slug={slug} verificacionToken={verificacionToken} onSuccess={handleSuccess} />
+          )}
+          {metodo === "face_client" && (
+            <VerificarFaceClient slug={slug} verificacionToken={verificacionToken} onSuccess={handleSuccess} />
           )}
         </div>
 

@@ -1,5 +1,5 @@
 export type EstadoEleccion = "borrador" | "activa" | "cerrada";
-export type VerificacionIdentidad = "ninguna" | "dni_qr" | "otp_email" | "renaper" | "face_cloud";
+export type VerificacionIdentidad = "ninguna" | "dni_qr" | "otp_email" | "renaper" | "face_cloud" | "face_client";
 
 export interface Organizacion {
   id: number;

@@ -205,8 +205,9 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
             { value: "ninguna",    icon: "🔓", label: "Sin verificación",         desc: "Solo se valida que el DNI esté en el padrón" },
             { value: "dni_qr",    icon: "📷", label: "QR del DNI",               desc: "El votante escanea el código de barras trasero de su DNI físico" },
             { value: "otp_email", icon: "✉️", label: "Código por email",         desc: "Se envía un código de 6 dígitos al email registrado en el padrón" },
-            { value: "face_cloud", icon: "🤳", label: "Verificación biométrica", desc: "Foto del DNI + selfie comparadas con IA. Sin trámites gubernamentales." },
-            { value: "renaper",   icon: "🪪", label: "RENAPER (solo mock)",      desc: "Foto del DNI + selfie contra el Registro Nacional. Requiere habilitación oficial.", pendiente: true },
+            { value: "face_cloud",  icon: "🤳", label: "Biométrica (AWS)",         desc: "Foto del DNI + selfie comparadas con AWS Rekognition. Requiere credenciales AWS." },
+            { value: "face_client", icon: "🧠", label: "Biométrica offline",       desc: "Foto del DNI + selfie comparadas en el dispositivo del votante. Sin APIs externas." },
+            { value: "renaper",    icon: "🪪", label: "RENAPER (solo mock)",       desc: "Foto del DNI + selfie contra el Registro Nacional. Requiere habilitación oficial.", pendiente: true },
           ] as const).map((opt) => (
             <button
               key={opt.value}
@@ -235,8 +236,15 @@ export default function EleccionForm({ eleccion, redirectAfterCreate }: Props) {
         </div>
         {verificacionIdentidad === "face_cloud" && (
           <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-            Requiere configurar <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code> y <code>AWS_REGION</code> en el servidor.
+            Requiere <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code> y <code>AWS_REGION</code> en el servidor.
             Las imágenes se procesan por AWS Rekognition y no son almacenadas. Costo: ~USD 0.002 por verificación.
+          </p>
+        )}
+        {verificacionIdentidad === "face_client" && (
+          <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+            🔒 Máxima privacidad — las imágenes <strong>nunca salen del dispositivo del votante</strong>. La comparación facial
+            se realiza en el browser con IA local (face-api.js). Sin costo por verificación. Los modelos (~7MB) se descargan
+            desde CDN al iniciar la verificación.
           </p>
         )}
         {verificacionIdentidad === "otp_email" && (
